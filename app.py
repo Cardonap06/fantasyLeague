@@ -1,174 +1,138 @@
 import streamlit as st
 from pymongo import MongoClient
-import pandas as pd
-from equiposFantasy import equipos_fantasy_page
+from PIL import Image
+
+try:
+    from fantasyLeague.view.equiposFantasy import equipos_fantasy_page
+    from fantasyLeague.view.usuarios import usuarios_page
+    from fantasyLeague.view.jugadores import jugadores_page
+    from fantasyLeague.view.ranking import ranking_page
+    from fantasyLeague.view.estadisticas import estadisticas_page
+except ImportError:
+    from view.equiposFantasy import equipos_fantasy_page
+    from view.usuarios import usuarios_page
+    from view.jugadores import jugadores_page
+    from view.ranking import ranking_page
+    from view.estadisticas import estadisticas_page
+
+icon = Image.open("icon.png")
 
 st.set_page_config(
     page_title="Fantasy League",
-    page_icon="⚽",
+    page_icon=icon,
     layout="wide"
 )
 
+st.markdown(
+    """
+    <style>
+    div[role="radiogroup"] label {
+        font-size: 22px !important;
+        font-weight: 600 !important;
+        padding: 10px 0 !important;
+    }
+
+    [data-testid="stSidebar"] h1 {
+        font-size: 42px !important;
+    }
+
+    [data-testid="stSidebar"] {
+    background-color: #1C1F2E;
+    }
+
+    .stApp {
+        background: linear-gradient(
+            180deg,
+            #0A1F44 0%,
+            #14213D 100%
+        );
+        color: #ffffff;
+    }
+
+    .css-1d391kg, .css-1d391kg span {
+        color: #ffffff;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 client = MongoClient("mongodb://localhost:27017")
-#db = client["Fantasyleague"]    #isabella
-db = client["fantasyLeague"]     #sara
+db = client["FantasyLeague"]
 
-st.sidebar.title("⚽ Fantasy League")
+st.sidebar.title("Fantasy League ⚽")
+st.sidebar.markdown("---")
 
-opcion = st.sidebar.selectbox(
-    "Seleccione una opción",
+opcion = st.sidebar.radio(
+    "Menú",
     [
         "Inicio",
         "Usuarios",
         "Jugadores",
-        "Ranking",
         "Equipos Fantasy",
-        "Estadísticas"
-    ]
+        "Estadísticas",
+        "Ranking"
+    ],
 )
 
+st.sidebar.markdown("---")
+
 if opcion == "Inicio":
-
-    st.title("⚽ Fantasy League")
-
-    st.write(
+    st.title("Fantasy League")
+    st.markdown(
         """
-        Plataforma Fantasy League basada en MongoDB.
-        Proyecto Final NoSQL.
+        Bienvenido a la plataforma Fantasy League. Aquí puedes gestionar usuarios,
+        crear jugadores, armar equipos fantasy y revisar estadísticas reales del torneo.
         """
     )
+    st.divider()
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("👤 Usuarios registrados", db.usuarios.count_documents({}))
+    col2.metric("⚽ Jugadores en la base", db.jugadores.count_documents({}))
+    col3.metric("🏟️ Equipos fantasy", db.equiposFantasy.count_documents({}))
+    col4.metric("🏆 Partidos analizados", db.partidos.count_documents({}))
+
+    st.divider()
+
+    col_izq, col_der = st.columns(2)
+    with col_izq:
+        st.subheader("Top 3 jugadores")
+        top_jugadores = list(
+            db.jugadores.aggregate([
+                {"$sort": {"puntosTotales": -1}},
+                {"$limit": 3}
+            ])
+        )
+        if top_jugadores:
+            for jugador in top_jugadores:
+                st.write(f"⚽ {jugador.get('nombre', 'Sin nombre')} — {jugador.get('puntosTotales', 0)} pts")
+        else:
+            st.info("No hay jugadores registrados aún.")
+
+    with col_der:
+        st.subheader("Equipos activos")
+        equipos = list(db.equiposFantasy.find())
+        if equipos:
+            for equipo in equipos:
+                st.write(f"🏆 {equipo.get('nombreEquipo', 'Equipo sin nombre')}")
+        else:
+            st.info("No hay equipos fantasy creados todavía.")
+
+    st.divider()
+    st.success("Visualiza y administra tu liga con estadísticas en tiempo real desde MongoDB.")
 
 elif opcion == "Usuarios":
-
-    st.subheader("Registrar Usuario")
-
-    nombre = st.text_input("Nombre")
-    correo = st.text_input("Correo")
-    pais = st.text_input("País")
-
-    if st.button("Registrar"):
-
-        if nombre and correo and pais:
-
-            resultado = db.usuarios.insert_one({
-                "nombre": nombre,
-                "correo": correo,
-                "pais": pais
-            })
-
-            st.success("Usuario registrado correctamente")
-            st.write("ID generado:", resultado.inserted_id)
-
-        else:
-            st.error("Complete todos los campos")
-
-    st.header("Usuarios")
-
-    usuarios = list(db.usuarios.find())
-
-    df = pd.DataFrame(usuarios)
-
-    if not df.empty:
-
-        if "_id" in df.columns:
-            df["_id"] = df["_id"].astype(str)
-
-        st.dataframe(df)
+    usuarios_page(db)
 
 elif opcion == "Jugadores":
-
-    st.header("⚽ Jugadores")
-
-    jugadores = list(
-        db.jugadores.find().sort(
-            "puntosTotales",
-            -1
-        )
-    )
-
-    df = pd.DataFrame(jugadores)
-
-    if not df.empty:
-
-        if "_id" in df.columns:
-            df = df.drop("_id", axis=1)
-
-        st.dataframe(df)
+    jugadores_page(db)
 
 elif opcion == "Ranking":
-
-    st.header("🏆 Ranking")
-
-    ranking = list(
-        db.rankings.find().sort(
-            "puntosTotales",
-            -1
-        )
-    )
-
-    df = pd.DataFrame(ranking)
-
-    if not df.empty:
-
-        if "_id" in df.columns:
-            df = df.drop("_id", axis=1)
-
-        st.dataframe(df)
+    ranking_page(db)
 
 elif opcion == "Equipos Fantasy":
     equipos_fantasy_page(db)
 
 elif opcion == "Estadísticas":
-
-    st.header("📊 Estadísticas MongoDB")
-
-    st.info(
-        "Esta sección utiliza Aggregation Framework de MongoDB ($match, $sort y $limit)."
-    )
-
-    st.subheader("Jugadores con más de 100 puntos")
-
-    resultado = list(
-        db.jugadores.aggregate([
-            {
-                "$match": {
-                    "puntosTotales": {
-                        "$gt": 100
-                    }
-                }
-            }
-        ])
-    )
-
-    df = pd.DataFrame(resultado)
-
-    if not df.empty:
-
-        if "_id" in df.columns:
-            df = df.drop("_id", axis=1)
-
-        st.dataframe(df)
-
-    st.subheader("Top 3 Jugadores")
-
-    top3 = list(
-        db.jugadores.aggregate([
-            {
-                "$sort": {
-                    "puntosTotales": -1
-                }
-            },
-            {
-                "$limit": 3
-            }
-        ])
-    )
-
-    df_top3 = pd.DataFrame(top3)
-
-    if not df_top3.empty:
-
-        if "_id" in df_top3.columns:
-            df_top3 = df_top3.drop("_id", axis=1)
-
-        st.dataframe(df_top3)
+    estadisticas_page(db)
