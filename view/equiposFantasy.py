@@ -82,7 +82,7 @@ def equipos_fantasy_page(db):
 
     st.divider()
 
-    st.markdown("Eliminar jugador")
+    st.subheader(" Eliminar equipo")
     equipo_eliminar = st.selectbox("Equipo", [""] + equipos_nombres, key="equipo_eliminar")
     jugadores_equipo = []
 
@@ -101,6 +101,8 @@ def equipos_fantasy_page(db):
                 {"$pull": {"jugadores": {"nombre": jugador_eliminar}}}
             )
             st.success(f"Jugador {jugador_eliminar} eliminado del equipo {equipo_eliminar}.")
+
+    st.divider()
 
     st.subheader("Actualizar alineación de un equipo")
 
@@ -158,6 +160,39 @@ def equipos_fantasy_page(db):
             st.success(f"Capitán de {equipo_capitan} cambiado a {nuevo_capitan}.")
 
     st.divider()
+
+    st.subheader(" Eliminar equipo")
+
+    equipo_borrar = st.selectbox(
+        "Selecciona un equipo",
+        [""] + equipos_nombres,
+        key="equipo_borrar"
+    )
+
+    if st.button("Eliminar equipo"):
+
+        if not equipo_borrar:
+
+            st.error(
+                "Selecciona un equipo."
+            )
+
+        else:
+
+            db.equiposFantasy.delete_one(
+                {
+                    "nombreEquipo": equipo_borrar
+                }
+            )
+
+            st.success(
+                f"Equipo {equipo_borrar} eliminado correctamente."
+            )
+
+            st.rerun()
+
+    st.divider()
+    
     st.subheader("Equipos registrados")
 
     equipos_registrados = list(db.equiposFantasy.find())
@@ -181,3 +216,5 @@ def equipos_fantasy_page(db):
         }
     )
     st.dataframe(df_equipos[["Equipo", "Manager", "Capitán", "Jugadores totales"]])
+
+
