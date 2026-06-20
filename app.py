@@ -64,7 +64,7 @@ st.markdown(
 client = MongoClient("mongodb://localhost:27017")
 db = client["FantasyLeague"]
 
-st.sidebar.title("Fantasy League ⚽")
+st.sidebar.title("Fantasy League ")
 st.sidebar.markdown("---")
 
 opcion = st.sidebar.radio(
@@ -102,7 +102,7 @@ if opcion == "Inicio":
     st.divider()
 
 
-    st.markdown("## 📊 Resumen de la Liga")
+    st.markdown(" Resumen de la Liga")
 
     # ==========================================
     # FILA 1
@@ -112,7 +112,7 @@ if opcion == "Inicio":
 
     with col_izq:
 
-        st.subheader("🏆 Top 3 jugadores")
+        st.subheader(" Top 3 jugadores")
 
         top_jugadores = list(
             db.jugadores.aggregate([
@@ -138,7 +138,7 @@ if opcion == "Inicio":
 
     with col_der:
 
-        st.subheader("🏟️ Equipos activos")
+        st.subheader("Equipos activos")
 
         equipos = list(
             db.equiposFantasy.find()
