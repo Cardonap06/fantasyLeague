@@ -102,7 +102,7 @@ if opcion == "Inicio":
     st.divider()
 
 
-    st.markdown(" Resumen de la Liga")
+    st.markdown("## Resumen de la Liga")
 
     # ==========================================
     # FILA 1
