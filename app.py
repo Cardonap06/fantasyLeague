@@ -8,12 +8,16 @@ try:
     from fantasyLeague.view.jugadores import jugadores_page
     from fantasyLeague.view.ranking import ranking_page
     from fantasyLeague.view.estadisticas import estadisticas_page
+    from fantasyLeague.view.partidos import partidos_page
+    from fantasyLeague.view.jornadas import jornadas_page
 except ImportError:
     from view.equiposFantasy import equipos_fantasy_page
     from view.usuarios import usuarios_page
     from view.jugadores import jugadores_page
     from view.ranking import ranking_page
     from view.estadisticas import estadisticas_page
+    from view.partidos import partidos_page
+    from view.jornadas import jornadas_page
 
 icon = Image.open("icon.png")
 
@@ -70,6 +74,8 @@ opcion = st.sidebar.radio(
         "Usuarios",
         "Jugadores",
         "Equipos Fantasy",
+        "Partidos",
+        "Jornadas",
         "Estadísticas",
         "Ranking"
     ],
@@ -110,6 +116,25 @@ if opcion == "Inicio":
         else:
             st.info("No hay jugadores registrados aún.")
 
+    # Mostrar últimos 3 partidos debajo del Top 3 jugadores
+    with col_izq:
+        st.subheader("Últimos 3 partidos")
+        try:
+            ultimos = list(db.partidos.find().sort("fecha", -1).limit(3))
+        except Exception:
+            ultimos = list(db.partidos.find().sort([("_id", -1)]).limit(3))
+
+        if ultimos:
+            for p in ultimos:
+                local = p.get("equipoLocal") or p.get("local") or "Local"
+                visit = p.get("equipoVisitante") or p.get("visitante") or "Visitante"
+                goles_local = p.get("golesLocal") if p.get("golesLocal") is not None else p.get("goles_local", "")
+                goles_visit = p.get("golesVisitante") if p.get("golesVisitante") is not None else p.get("goles_visitante", "")
+                fecha = p.get("fecha", "")
+                st.write(f"{fecha} — {local} {goles_local} : {goles_visit} {visit}")
+        else:
+            st.info("No hay partidos registrados aún.")
+
     with col_der:
         st.subheader("Equipos activos")
         equipos = list(db.equiposFantasy.find())
@@ -124,6 +149,12 @@ if opcion == "Inicio":
 
 elif opcion == "Usuarios":
     usuarios_page(db)
+
+elif opcion == "Partidos":
+    partidos_page(db)
+
+elif opcion == "Jornadas":
+    jornadas_page(db)
 
 elif opcion == "Jugadores":
     jugadores_page(db)
