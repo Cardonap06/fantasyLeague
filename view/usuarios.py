@@ -1,5 +1,12 @@
 import streamlit as st
 import pandas as pd
+import pycountry
+
+@st.cache_data
+def obtener_paises():
+    return sorted(
+        [pais.name for pais in pycountry.countries]
+)
 
 
 def usuarios_page(db):
@@ -9,9 +16,15 @@ def usuarios_page(db):
     with st.form("usuario_form", clear_on_submit=True):
         nombre = st.text_input("Nombre completo")
         correo = st.text_input("Correo electrónico")
-        pais = st.text_input("País")
-        submitted = st.form_submit_button("Registrar usuario")
-
+        paises = obtener_paises()
+        pais = st.selectbox(
+            "País",
+            paises
+        )
+        submitted = st.form_submit_button(
+            "Registrar usuario"
+        )
+       
         if submitted:
             if nombre and correo and pais:
                 resultado = db.usuarios.insert_one({
@@ -54,7 +67,23 @@ def usuarios_page(db):
             with st.form("editar_usuario_form"):
                 nombre_edit = st.text_input("Nombre completo", value=usuario_doc.get("nombre", ""))
                 correo_edit = st.text_input("Correo electrónico", value=usuario_doc.get("correo", ""))
-                pais_edit = st.text_input("País", value=usuario_doc.get("pais", ""))
+                paises = obtener_paises()
+                pais_actual = usuario_doc.get(
+                    "pais",
+                    paises[0]
+                )
+
+                indice = 0
+
+                if pais_actual in paises:
+                    indice = paises.index(pais_actual)
+
+                pais_edit = st.selectbox(
+                    "País",
+                    paises,
+                    index=indice,
+                    key="pais_edit"
+                )
                 guardar = st.form_submit_button("Guardar cambios")
 
                 if guardar:

@@ -69,60 +69,57 @@ def estadisticas_page(db):
     st.divider()
     st.subheader("Consultar estadísticas de un jugador")
 
-    jugador_consulta = st.selectbox("Jugador para consultar", [""] + jugadores_nombres, key="jugador_consulta")
+    jugador_consulta = st.selectbox(
+        "Jugador para consultar",
+        [""] + jugadores_nombres,
+        key="jugador_consulta"
+    )
+
     if jugador_consulta:
-        estadisticas_jugador = list(db.estadisticas.find({"jugador": jugador_consulta}).sort("fecha", -1))
-        df_estadisticas = pd.DataFrame(estadisticas_jugador)
-        if df_estadisticas.empty:
-            st.info("No hay estadísticas registradas para este jugador.")
-        else:
-            if "_id" in df_estadisticas.columns:
-                df_estadisticas = df_estadisticas.drop(columns=["_id"])
-            df_estadisticas = df_estadisticas.rename(
-                columns={
-                    "jugador": "Jugador",
-                    "goles": "Goles",
-                    "asistencias": "Asistencias",
-                    "tarjetasAmarillas": "Tarjetas amarillas",
-                    "tarjetasRojas": "Tarjetas rojas",
-                    "fecha": "Fecha",
-                }
-            )
-            st.dataframe(df_estadisticas)
 
-    st.divider()
-    st.subheader("Crear jornada fantasy")
-
-    with st.form("jornada_form", clear_on_submit=True):
-        numero = st.number_input("Número de jornada", min_value=1, value=1)
-        descripcion = st.text_input("Descripción")
-        fecha_jornada = st.date_input("Fecha de la jornada")
-        estado = st.selectbox("Estado", ["Programada", "Finalizada", "En curso"])
-        crear_jornada = st.form_submit_button("Crear jornada")
-
-        if crear_jornada:
-            if not descripcion:
-                st.error("Agrega una descripción para la jornada.")
-            else:
-                db.jornadas.insert_one({
-                    "numero": int(numero),
-                    "descripcion": descripcion,
-                    "fecha": str(fecha_jornada),
-                    "estado": estado,
-                })
-                st.success("Jornada fantasy creada correctamente.")
-
-    st.divider()
-    st.subheader("Jornadas fantasy registradas")
-
-    jornadas = list(db.jornadas.find().sort("numero", 1))
-    df_jornadas = pd.DataFrame(jornadas)
-    if df_jornadas.empty:
-        st.info("No hay jornadas registradas todavía.")
-    else:
-        if "_id" in df_jornadas.columns:
-            df_jornadas = df_jornadas.drop(columns=["_id"])
-        df_jornadas = df_jornadas.rename(
-            columns={"numero": "Jornada", "descripcion": "Descripción", "fecha": "Fecha", "estado": "Estado"}
+        jugador_doc = db.jugadores.find_one(
+            {"nombre": jugador_consulta}
         )
-        st.dataframe(df_jornadas)
+
+        if jugador_doc:
+
+            estadisticas_jugador = list(
+                db.estadisticasJugadores.find(
+                    {
+                        "jugadorId": jugador_doc["_id"]
+                    }
+                )
+            )
+
+            df_estadisticas = pd.DataFrame(
+                estadisticas_jugador
+            )
+
+            if df_estadisticas.empty:
+
+                st.info(
+                    "No hay estadísticas registradas para este jugador."
+                )
+
+            else:
+
+                if "_id" in df_estadisticas.columns:
+                    df_estadisticas = df_estadisticas.drop(
+                        columns=["_id"]
+                    )
+
+                if "jugadorId" in df_estadisticas.columns:
+                    df_estadisticas = df_estadisticas.drop(
+                        columns=["jugadorId"]
+                    )
+
+                st.dataframe(
+                    df_estadisticas,
+                    use_container_width=True
+                )
+
+        else:
+
+            st.error(
+                "El jugador seleccionado no existe."
+            )

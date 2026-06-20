@@ -81,6 +81,27 @@ def equipos_fantasy_page(db):
                     st.success(f"{jugador_para_agregar} fue agregado a {equipo_para_agregar}.")
 
     st.divider()
+
+    st.markdown("Eliminar jugador")
+    equipo_eliminar = st.selectbox("Equipo", [""] + equipos_nombres, key="equipo_eliminar")
+    jugadores_equipo = []
+
+    if equipo_eliminar:
+        equipo_doc = next((e for e in equipos if e.get("nombreEquipo") == equipo_eliminar), None)
+        jugadores_equipo = [jugador.get("nombre") for jugador in equipo_doc.get("jugadores", [])] if equipo_doc else []
+
+    jugador_eliminar = st.selectbox("Jugador del equipo", [""] + jugadores_equipo, key="jugador_eliminar")
+
+    if st.button("Eliminar Jugador"):
+        if not equipo_eliminar or not jugador_eliminar:
+            st.error("Seleccione un equipo y un jugador para eliminar.")
+        else:
+            db.equiposFantasy.update_one(
+                {"nombreEquipo": equipo_eliminar},
+                {"$pull": {"jugadores": {"nombre": jugador_eliminar}}}
+            )
+            st.success(f"Jugador {jugador_eliminar} eliminado del equipo {equipo_eliminar}.")
+
     st.subheader("Actualizar alineación de un equipo")
 
     equipo_para_alinear = st.selectbox("Equipo a ajustar", [""] + equipos_nombres, key="equipo_alinear")

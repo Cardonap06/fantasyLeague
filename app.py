@@ -101,48 +101,152 @@ if opcion == "Inicio":
 
     st.divider()
 
+
+    st.markdown("## 📊 Resumen de la Liga")
+
+    # ==========================================
+    # FILA 1
+    # ==========================================
+
     col_izq, col_der = st.columns(2)
+
     with col_izq:
-        st.subheader("Top 3 jugadores")
+
+        st.subheader("🏆 Top 3 jugadores")
+
         top_jugadores = list(
             db.jugadores.aggregate([
                 {"$sort": {"puntosTotales": -1}},
                 {"$limit": 3}
             ])
         )
-        if top_jugadores:
-            for jugador in top_jugadores:
-                st.write(f"⚽ {jugador.get('nombre', 'Sin nombre')} — {jugador.get('puntosTotales', 0)} pts")
-        else:
-            st.info("No hay jugadores registrados aún.")
 
-    # Mostrar últimos 3 partidos debajo del Top 3 jugadores
-    with col_izq:
-        st.subheader("Últimos 3 partidos")
-        try:
-            ultimos = list(db.partidos.find().sort("fecha", -1).limit(3))
-        except Exception:
-            ultimos = list(db.partidos.find().sort([("_id", -1)]).limit(3))
+        if len(top_jugadores) >= 1:
+            st.write(
+                f"🥇 {top_jugadores[0]['nombre']} — {top_jugadores[0]['puntosTotales']} pts"
+            )
 
-        if ultimos:
-            for p in ultimos:
-                local = p.get("equipoLocal") or p.get("local") or "Local"
-                visit = p.get("equipoVisitante") or p.get("visitante") or "Visitante"
-                goles_local = p.get("golesLocal") if p.get("golesLocal") is not None else p.get("goles_local", "")
-                goles_visit = p.get("golesVisitante") if p.get("golesVisitante") is not None else p.get("goles_visitante", "")
-                fecha = p.get("fecha", "")
-                st.write(f"{fecha} — {local} {goles_local} : {goles_visit} {visit}")
-        else:
-            st.info("No hay partidos registrados aún.")
+        if len(top_jugadores) >= 2:
+            st.write(
+                f"🥈 {top_jugadores[1]['nombre']} — {top_jugadores[1]['puntosTotales']} pts"
+            )
+
+        if len(top_jugadores) >= 3:
+            st.write(
+                f"🥉 {top_jugadores[2]['nombre']} — {top_jugadores[2]['puntosTotales']} pts"
+            )
 
     with col_der:
-        st.subheader("Equipos activos")
-        equipos = list(db.equiposFantasy.find())
+
+        st.subheader("🏟️ Equipos activos")
+
+        equipos = list(
+            db.equiposFantasy.find()
+        )
+
         if equipos:
+
             for equipo in equipos:
-                st.write(f"🏆 {equipo.get('nombreEquipo', 'Equipo sin nombre')}")
+
+                st.write(
+                    f"🏆 {equipo.get('nombreEquipo', 'Equipo sin nombre')}"
+                )
+
         else:
-            st.info("No hay equipos fantasy creados todavía.")
+
+            st.info(
+                "No hay equipos fantasy creados todavía."
+            )
+
+    st.divider()
+
+    # ==========================================
+    # FILA 2
+    # ==========================================
+
+    col_izq2, col_der2 = st.columns(2)
+
+    with col_izq2:
+
+        st.subheader("⚽ Últimos 3 partidos")
+
+        try:
+
+            ultimos = list(
+                db.partidos.find()
+                .sort("fecha", -1)
+                .limit(3)
+            )
+
+        except Exception:
+
+            ultimos = list(
+                db.partidos.find()
+                .sort([("_id", -1)])
+                .limit(3)
+            )
+
+        if ultimos:
+
+            for p in ultimos:
+
+                local = p.get("equipoLocal") or p.get("local")
+                visit = p.get("equipoVisitante") or p.get("visitante")
+
+                goles_local = (
+                    p.get("golesLocal")
+                    if p.get("golesLocal") is not None
+                    else p.get("goles_local", "")
+                )
+
+                goles_visit = (
+                    p.get("golesVisitante")
+                    if p.get("golesVisitante") is not None
+                    else p.get("goles_visitante", "")
+                )
+
+                st.write(
+                    f"— {local} {goles_local} : {goles_visit} {visit}"
+                )
+
+        else:
+
+            st.info(
+                "No hay partidos registrados aún."
+            )
+
+    with col_der2:
+
+        st.subheader("⭐ Jugador destacado")
+
+        jugador = db.jugadores.find_one(
+            sort=[("puntosTotales", -1)]
+        )
+
+        if jugador:
+
+            foto, info = st.columns([1, 2])
+
+            with foto:
+
+                st.image(
+                    jugador["imagen"],
+                    width=120
+                )
+
+            with info:
+
+                st.markdown(
+                    f"""
+                    ## {jugador['nombre']}
+
+                    🏟️ {jugador['equipo']}
+
+                    ⚽ {jugador['posicion']}
+
+                    🏆 **{jugador['puntosTotales']} pts**
+                    """
+                )
 
     st.divider()
     st.success("Visualiza y administra tu liga con estadísticas en tiempo real desde MongoDB.")
