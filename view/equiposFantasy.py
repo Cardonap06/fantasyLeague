@@ -209,12 +209,15 @@ def equipos_fantasy_page(db):
         lambda lista: len(lista) if isinstance(lista, list) else 0
     )
     df_equipos = df_equipos.rename(
-        columns={
-            "nombreEquipo": "Equipo",
-            "usuario": "Manager",
-            "capitan": "Capitán",
-        }
-    )
+    columns={
+        "nombreEquipo": "Equipo",
+        "usuario": "Manager",
+        "usuarioId": "Manager",
+        "capitan": "Capitán",
+    }
+)
+
+    
     st.dataframe(df_equipos[["Equipo", "Manager", "Capitán", "Jugadores totales"]])
 
 
