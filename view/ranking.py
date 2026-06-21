@@ -17,6 +17,7 @@ def ranking_page(db):
 
     ranking = []
 
+    # Calcular puntos de cada equipo
     for equipo in equipos:
 
         puntos_equipo = 0
@@ -50,12 +51,32 @@ def ranking_page(db):
             }
         )
 
+    # Ordenar ranking
     ranking = sorted(
         ranking,
         key=lambda x: x["Puntos"],
         reverse=True
     )
 
+    # Guardar/Actualizar ranking en MongoDB
+    for posicion, item in enumerate(ranking, start=1):
+
+        db.rankings.update_one(
+            {
+                "equipo": item["Equipo"]
+            },
+            {
+                "$set": {
+                    "posicion": posicion,
+                    "manager": item["Manager"],
+                    "equipo": item["Equipo"],
+                    "puntosTotales": item["Puntos"]
+                }
+            },
+            upsert=True
+        )
+
+    # Crear DataFrame para mostrar
     df = pd.DataFrame(ranking)
 
     df.insert(
@@ -74,7 +95,12 @@ def ranking_page(db):
 
     st.divider()
 
+    # Mostrar líder
     if len(df) >= 1:
+
+        lider = df.iloc[0]
+
         st.success(
-            f"🥇 Líder actual: {df.iloc[0]['Manager']} ({df.iloc[0]['Puntos']} pts)"
+            f"🥇 Líder actual: {lider['Manager']} ({lider['Puntos']} pts)"
         )
+

@@ -220,4 +220,50 @@ def equipos_fantasy_page(db):
     
     st.dataframe(df_equipos[["Equipo", "Manager", "Capitán", "Jugadores totales"]])
 
+    
+    st.divider()
+
+    st.subheader("Ver plantilla de un equipo")
+
+    equipo_ver = st.selectbox(
+        "Selecciona un equipo",
+        [""] + equipos_nombres,
+        key="equipo_ver"
+    )
+
+    if equipo_ver:
+
+        equipo_doc = next(
+            (
+                e
+                for e in equipos_registrados
+                if e.get("nombreEquipo") == equipo_ver
+            ),
+            None
+        )
+
+        if equipo_doc:
+
+            st.markdown(
+                f"### {equipo_doc.get('nombreEquipo')}"
+            )
+
+            st.write(
+                f"👤 Manager: {equipo_doc.get('usuario')}"
+            )
+
+            st.write(
+                f"⭐ Capitán: {equipo_doc.get('capitan')}"
+            )
+
+            st.write("⚽ Jugadores de la plantilla")
+
+            for jugador in equipo_doc.get(
+                "jugadores",
+                []
+            ):
+
+                st.write(
+                    f"• {jugador.get('nombre')} ({jugador.get('posicion')})"
+                )
 
