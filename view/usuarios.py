@@ -33,6 +33,7 @@ def usuarios_page(db):
                     "pais": pais,
                 })
                 st.success("Usuario registrado con éxito.")
+                st.rerun()
                 st.write("ID generado:", resultado.inserted_id)
             else:
                 st.error("Por favor completa todos los campos para registrar el usuario.")
@@ -93,6 +94,7 @@ def usuarios_page(db):
                             {"$set": {"nombre": nombre_edit, "correo": correo_edit, "pais": pais_edit}},
                         )
                         st.success("Información del usuario actualizada correctamente.")
+                        st.rerun()
                     else:
                         st.error("Completa todos los campos para actualizar el usuario.")
 
@@ -107,5 +109,6 @@ def usuarios_page(db):
             if usuario_doc:
                 db.usuarios.delete_one({"_id": usuario_doc["_id"]})
                 st.success(f"Usuario {usuario_borrar} eliminado correctamente.")
+                st.rerun()
             else:
                 st.error("No se encontró el usuario seleccionado.")
