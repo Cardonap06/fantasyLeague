@@ -64,6 +64,23 @@ def estadisticas_page(db):
                     "tarjetasRojas": int(tarjetas_rojas),
                     "fecha": str(fecha),
                 })
+                puntos_jornada = (
+                    int(goles) * 5 +
+                    int(asistencias) * 3 -
+                    int(tarjetas_amarillas) * 1 -
+                    int(tarjetas_rojas) * 3
+                )
+
+                db.jugadores.update_one(
+                    {
+                        "nombre": jugador_estadistica
+                    },
+                    {
+                        "$inc": {
+                            "puntosTotales": puntos_jornada
+                        }
+                    }
+                )
                 st.success("Estadísticas registradas correctamente.")
 
     st.divider()
@@ -77,49 +94,32 @@ def estadisticas_page(db):
 
     if jugador_consulta:
 
-        jugador_doc = db.jugadores.find_one(
-            {"nombre": jugador_consulta}
+        estadisticas_jugador = list(
+            db.estadisticas.find(
+                {
+                    "jugador": jugador_consulta
+                }
+            )
         )
 
-        if jugador_doc:
+        df_estadisticas = pd.DataFrame(
+            estadisticas_jugador
+        )
 
-            estadisticas_jugador = list(
-                db.estadisticasJugadores.find(
-                    {
-                        "jugadorId": jugador_doc["_id"]
-                    }
-                )
+        if df_estadisticas.empty:
+
+            st.info(
+                "No hay estadísticas registradas para este jugador."
             )
-
-            df_estadisticas = pd.DataFrame(
-                estadisticas_jugador
-            )
-
-            if df_estadisticas.empty:
-
-                st.info(
-                    "No hay estadísticas registradas para este jugador."
-                )
-
-            else:
-
-                if "_id" in df_estadisticas.columns:
-                    df_estadisticas = df_estadisticas.drop(
-                        columns=["_id"]
-                    )
-
-                if "jugadorId" in df_estadisticas.columns:
-                    df_estadisticas = df_estadisticas.drop(
-                        columns=["jugadorId"]
-                    )
-
-                st.dataframe(
-                    df_estadisticas,
-                    use_container_width=True
-                )
 
         else:
 
-            st.error(
-                "El jugador seleccionado no existe."
+            if "_id" in df_estadisticas.columns:
+                df_estadisticas = df_estadisticas.drop(
+                    columns=["_id"]
+                )
+
+            st.dataframe(
+                df_estadisticas,
+                use_container_width=True
             )

@@ -5,6 +5,32 @@ import pandas as pd
 def jornadas_page(db):
     st.header("📅 Jornadas")
 
+
+    st.subheader("Crear jornada fantasy")
+
+    with st.form("jornada_form", clear_on_submit=True):
+                numero = st.number_input("Número de jornada", min_value=1, value=1)
+                descripcion = st.text_input("Descripción")
+                fecha_jornada = st.date_input("Fecha de la jornada")
+                estado = st.selectbox("Estado", ["Programada", "Finalizada", "En curso"])
+                crear_jornada = st.form_submit_button("Crear jornada")
+
+                if crear_jornada:
+                    if not descripcion:
+                        st.error("Agrega una descripción para la jornada.")
+                    else:
+                        db.jornadas.insert_one({
+                            "numero": int(numero),
+                            "descripcion": descripcion,
+                            "fecha": str(fecha_jornada),
+                            "estado": estado,
+                        })
+                        st.success("Jornada fantasy creada correctamente.")
+                        st.rerun()
+
+    st.divider()
+
+
     jornadas = list(db.jornadas.find().sort("numero", 1))
     if not jornadas:
         st.info("No hay jornadas registradas.")
@@ -30,28 +56,7 @@ def jornadas_page(db):
             )
 
     st.divider()
-    st.subheader("Crear jornada fantasy")
-
-    with st.form("jornada_form", clear_on_submit=True):
-            numero = st.number_input("Número de jornada", min_value=1, value=1)
-            descripcion = st.text_input("Descripción")
-            fecha_jornada = st.date_input("Fecha de la jornada")
-            estado = st.selectbox("Estado", ["Programada", "Finalizada", "En curso"])
-            crear_jornada = st.form_submit_button("Crear jornada")
-
-            if crear_jornada:
-                if not descripcion:
-                    st.error("Agrega una descripción para la jornada.")
-                else:
-                    db.jornadas.insert_one({
-                        "numero": int(numero),
-                        "descripcion": descripcion,
-                        "fecha": str(fecha_jornada),
-                        "estado": estado,
-                    })
-                    st.success("Jornada fantasy creada correctamente.")
-
-    st.divider()
+   
     st.subheader("Jornadas fantasy registradas")
     jornadas = list(db.jornadas.find().sort("numero", 1))
     df_jornadas = pd.DataFrame(jornadas)

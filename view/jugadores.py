@@ -264,6 +264,6 @@ def jugadores_page(db):
     """
 
     num_filas = (len(jugadores) + 2) // 3
-    altura = 120 + (num_filas * 360)
+    altura = 150 + (num_filas * 450)
 
     components.html(html_completo, height=altura, scrolling=False)

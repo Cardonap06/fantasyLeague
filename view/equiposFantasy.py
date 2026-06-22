@@ -104,7 +104,7 @@ def equipos_fantasy_page(db):
 
     st.divider()
 
-    st.subheader("Actualizar alineación de un equipo")
+    st.subheader("Actualizar jugadores del equipo")
 
     equipo_para_alinear = st.selectbox("Equipo a ajustar", [""] + equipos_nombres, key="equipo_alinear")
     alineacion_actual = []
@@ -138,7 +138,7 @@ def equipos_fantasy_page(db):
                 {"nombreEquipo": equipo_para_alinear},
                 {"$set": {"jugadores": jugadores_objetos}},
             )
-            st.success("Alineación actualizada correctamente.")
+            st.success("Actualización de jugadores del equipo correctamente.")
 
     st.divider()
     st.subheader("Cambiar capitán del equipo")
