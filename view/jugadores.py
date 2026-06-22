@@ -47,6 +47,8 @@ def jugadores_page(db):
         "Inter Milan":     "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg",
         "AC Milan":        "https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg",
         "Borussia Dortmund": "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg",
+        "Inter Miami":      "assets/interMiami.png",
+        "Al nassr":        "assets/al_Nassr.png"
     }
 
     PLACEHOLDER = "https://placehold.co/150x150/1a2a5e/888?text=?"
